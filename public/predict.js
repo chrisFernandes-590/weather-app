@@ -1,6 +1,7 @@
 // ──────────────────────────────────────────────
 //  predict.js — Client-side logic for Predictor View
-//  Handles: autocomplete, filter buttons, Leaflet map
+//  Handles: autocomplete, filter buttons, Leaflet map,
+//           filter-based prediction questions
 // ──────────────────────────────────────────────
 
 // ═══════════════════════════════════════
@@ -36,16 +37,13 @@ async function fetchSuggestions(query) {
     const res = await fetch(`/api/suggestions?q=${encodeURIComponent(query)}`);
     const serverSuggestions = await res.json();
 
-    // Also filter local searches
     const localSearches = getLocalSearches().filter((s) =>
       s.toLowerCase().startsWith(query.toLowerCase())
     );
 
-    // Merge, deduplicate, limit to 8
     const merged = [...new Set([...localSearches, ...serverSuggestions])];
     return merged.slice(0, 8);
   } catch {
-    // Fallback to localStorage only
     return getLocalSearches()
       .filter((s) => s.toLowerCase().startsWith(query.toLowerCase()))
       .slice(0, 8);
@@ -111,42 +109,122 @@ cityInput.addEventListener("focus", async () => {
 });
 
 // ═══════════════════════════════════════
-//  FILTER BUTTONS
+//  FILTER BUTTONS + PREDICTION QUESTION
 // ═══════════════════════════════════════
 
 const filterButtons = document.querySelectorAll(".filter-btn");
 const resultCard = document.getElementById("weather-result");
+const badgeInner = document.getElementById("badge-inner");
+const badgeText = document.getElementById("badge-text");
+const predictQuestion = document.getElementById("predict-question");
+const weatherData = window.__WEATHER_DATA__;
+
+// Filter config: label, positive/negative text, check function
+const filterConfig = {
+  rain: {
+    question: "Will it rain tomorrow? Find out now.",
+    check: (id) => id >= 200 && id < 600,
+    yesText: "Yes, it will rain tomorrow!",
+    noText: "No rain expected tomorrow",
+    yesClass: "rain-yes",
+    noClass: "rain-no",
+    yesIcon: "cloud-rain",
+    noIcon: "sun",
+  },
+  clear: {
+    question: "Will it be sunny tomorrow? Find out now.",
+    check: (id) => id === 800,
+    yesText: "Yes, it will be sunny tomorrow!",
+    noText: "No sunshine expected tomorrow",
+    yesClass: "rain-no",   // sunny = yellow badge
+    noClass: "rain-yes",   // not sunny = blue badge
+    yesIcon: "sun",
+    noIcon: "cloud",
+  },
+  clouds: {
+    question: "Will it be cloudy tomorrow? Find out now.",
+    check: (id) => id > 800,
+    yesText: "Yes, it will be cloudy tomorrow!",
+    noText: "No clouds expected tomorrow",
+    yesClass: "badge-cloudy",
+    noClass: "rain-no",
+    yesIcon: "cloud",
+    noIcon: "sun",
+  },
+  snow: {
+    question: "Will it snow tomorrow? Find out now.",
+    check: (id) => id >= 600 && id < 700,
+    yesText: "Yes, it will snow tomorrow!",
+    noText: "No snow expected tomorrow",
+    yesClass: "badge-snow",
+    noClass: "rain-no",
+    yesIcon: "snowflake",
+    noIcon: "sun",
+  },
+};
+
+// Currently active filter (null = default rain)
+let activeFilter = null;
 
 filterButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
-    // Toggle active class
-    btn.classList.toggle("filter-active");
+    const filter = btn.dataset.filter;
 
-    // If there's a result, highlight/dim based on filter match
-    if (resultCard) {
-      const activeFilters = Array.from(
-        document.querySelectorAll(".filter-btn.filter-active")
-      ).map((b) => b.dataset.filter);
+    // Toggle: if clicking same filter, deactivate
+    if (activeFilter === filter) {
+      btn.classList.remove("filter-active");
+      activeFilter = null;
+    } else {
+      // Deactivate all, activate this one (only one at a time)
+      filterButtons.forEach((b) => b.classList.remove("filter-active"));
+      btn.classList.add("filter-active");
+      activeFilter = filter;
+    }
 
-      if (activeFilters.length === 0) {
-        // No filters active — show normal
-        resultCard.style.opacity = "1";
-        resultCard.style.transform = "none";
-      } else {
-        const condition = resultCard.dataset.condition;
-        const matches = activeFilters.some((f) => condition.includes(f));
-        resultCard.style.opacity = matches ? "1" : "0.4";
-        resultCard.style.transform = matches ? "none" : "scale(0.98)";
-      }
+    // Update the question subtitle
+    updatePredictionQuestion();
+
+    // Update the badge if there's a result
+    if (weatherData && badgeInner && badgeText) {
+      updateBadge();
     }
   });
 });
+
+function updatePredictionQuestion() {
+  if (!predictQuestion) return;
+
+  if (activeFilter && filterConfig[activeFilter]) {
+    predictQuestion.textContent = filterConfig[activeFilter].question;
+  } else {
+    predictQuestion.textContent = "Will it rain tomorrow? Find out now.";
+  }
+}
+
+function updateBadge() {
+  const condId = weatherData.conditionId;
+  const config = activeFilter ? filterConfig[activeFilter] : filterConfig.rain;
+  const matches = config.check(condId);
+
+  // Update text
+  badgeText.textContent = matches ? config.yesText : config.noText;
+
+  // Update badge classes
+  badgeInner.className = "rain-badge " + (matches ? config.yesClass : config.noClass);
+
+  // Update the icon inside the badge
+  const iconEl = badgeInner.querySelector(".badge-icon");
+  if (iconEl) {
+    iconEl.setAttribute("data-lucide", matches ? config.yesIcon : config.noIcon);
+    // Re-render Lucide icons
+    lucide.createIcons();
+  }
+}
 
 // ═══════════════════════════════════════
 //  LEAFLET MAP
 // ═══════════════════════════════════════
 
-const weatherData = window.__WEATHER_DATA__;
 const mapContainer = document.getElementById("map");
 const mapPlaceholder = document.getElementById("map-placeholder");
 

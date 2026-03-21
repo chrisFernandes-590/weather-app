@@ -3,17 +3,17 @@
      ═══════════════════════════════════════ -->
 <nav class="navbar" id="navbar">
   <a href="/" class="navbar-brand">
-    <span class="brand-icon">⛅</span>
+    <i data-lucide="cloud-sun" class="brand-icon"></i>
     <span class="brand-text">WeatherApp</span>
   </a>
 
   <div class="navbar-links">
     <a href="/" class="nav-link <%= activePage === 'general' ? 'active' : '' %>" id="nav-general">
-      <span class="nav-emoji">📍</span>
+      <i data-lucide="map-pin" class="nav-icon"></i>
       Current Weather
     </a>
     <a href="/predict" class="nav-link <%= activePage === 'predict' ? 'active' : '' %>" id="nav-predict">
-      <span class="nav-emoji">🔮</span>
+      <i data-lucide="telescope" class="nav-icon"></i>
       Predictor
     </a>
   </div>

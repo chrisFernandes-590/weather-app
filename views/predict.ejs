@@ -17,8 +17,11 @@
 
       <!-- Search Card -->
       <div class="neo-card search-card">
-        <h1 class="predict-title">🔮 Weather Predictor</h1>
-        <p class="predict-subtitle">Will it rain tomorrow? Find out now.</p>
+        <h1 class="predict-title">
+          <i data-lucide="telescope" class="title-icon"></i>
+          Weather Predictor
+        </h1>
+        <p class="predict-subtitle" id="predict-question">Will it rain tomorrow? Find out now.</p>
 
         <!-- Search Form -->
         <form action="/weather" method="POST" class="search-form" id="predict-form">
@@ -36,46 +39,67 @@
             <div class="autocomplete-dropdown hidden" id="autocomplete-dropdown"></div>
           </div>
           <button type="submit" class="neo-btn search-btn" id="submit-btn">
-            Search 🔍
+            <i data-lucide="search" class="btn-icon"></i>
+            Search
           </button>
         </form>
 
         <!-- Filter Buttons -->
         <div class="filter-bar" id="filter-bar">
           <span class="filter-label">Filters:</span>
-          <button type="button" class="filter-btn" data-filter="rain">🌧️ Rain</button>
-          <button type="button" class="filter-btn" data-filter="clear">☀️ Sunny</button>
-          <button type="button" class="filter-btn" data-filter="clouds">☁️ Clouds</button>
-          <button type="button" class="filter-btn" data-filter="snow">❄️ Snow</button>
+          <button type="button" class="filter-btn" data-filter="rain">
+            <i data-lucide="cloud-rain" class="filter-icon"></i> Rain
+          </button>
+          <button type="button" class="filter-btn" data-filter="clear">
+            <i data-lucide="sun" class="filter-icon"></i> Sunny
+          </button>
+          <button type="button" class="filter-btn" data-filter="clouds">
+            <i data-lucide="cloud" class="filter-icon"></i> Clouds
+          </button>
+          <button type="button" class="filter-btn" data-filter="snow">
+            <i data-lucide="snowflake" class="filter-icon"></i> Snow
+          </button>
         </div>
       </div>
 
       <!-- Error Message -->
       <% if (error) { %>
-        <div class="neo-card error-card" id="error-box">
-          <span class="error-emoji">⚠️</span>
+        <div class="neo-card error-card predict-error" id="error-box">
+          <i data-lucide="alert-triangle" class="error-icon-svg"></i>
           <p><%= error %></p>
         </div>
       <% } %>
 
       <!-- Weather Result -->
       <% if (weather) { %>
-        <div class="neo-card result-card" id="weather-result" data-condition="<%= weather.main.toLowerCase() %>">
+        <div class="neo-card result-card" id="weather-result"
+             data-condition="<%= weather.main.toLowerCase() %>"
+             data-condition-id="<%= weather.conditionId %>"
+             data-will-rain="<%= weather.willRain %>">
 
           <!-- Location -->
           <div class="result-header">
             <h2>
+              <i data-lucide="map-pin" class="header-icon"></i>
               <%= weather.city %><% if (weather.state) { %>, <%= weather.state %><% } %>, <%= weather.country %>
             </h2>
             <span class="result-date"><%= weather.date %></span>
           </div>
 
-          <!-- Rain Badge -->
-          <div class="rain-badge <%= weather.willRain ? 'rain-yes' : 'rain-no' %>">
+          <!-- Prediction Badge (default: rain question) -->
+          <div class="prediction-badge" id="prediction-badge"
+               data-rain="<%= weather.willRain %>"
+               data-condition-id="<%= weather.conditionId %>">
             <% if (weather.willRain) { %>
-              <span>🌧️ Yes, it will rain tomorrow!</span>
+              <div class="rain-badge rain-yes" id="badge-inner">
+                <i data-lucide="cloud-rain" class="badge-icon"></i>
+                <span id="badge-text">Yes, it will rain tomorrow!</span>
+              </div>
             <% } else { %>
-              <span>☀️ No rain expected tomorrow</span>
+              <div class="rain-badge rain-no" id="badge-inner">
+                <i data-lucide="sun" class="badge-icon"></i>
+                <span id="badge-text">No rain expected tomorrow</span>
+              </div>
             <% } %>
           </div>
 
@@ -92,32 +116,32 @@
           <!-- Stats -->
           <div class="result-stats">
             <div class="stat-item">
-              <span class="stat-emoji">🌡️</span>
+              <i data-lucide="thermometer" class="stat-icon"></i>
               <span class="stat-value"><%= weather.tempDay %>°C</span>
               <span class="stat-label">Temp</span>
             </div>
             <div class="stat-item">
-              <span class="stat-emoji">⬆️</span>
+              <i data-lucide="arrow-up" class="stat-icon"></i>
               <span class="stat-value"><%= weather.tempMax %>°C</span>
               <span class="stat-label">High</span>
             </div>
             <div class="stat-item">
-              <span class="stat-emoji">⬇️</span>
+              <i data-lucide="arrow-down" class="stat-icon"></i>
               <span class="stat-value"><%= weather.tempMin %>°C</span>
               <span class="stat-label">Low</span>
             </div>
             <div class="stat-item">
-              <span class="stat-emoji">💧</span>
+              <i data-lucide="droplets" class="stat-icon"></i>
               <span class="stat-value"><%= weather.humidity %>%</span>
               <span class="stat-label">Humidity</span>
             </div>
             <div class="stat-item">
-              <span class="stat-emoji">💨</span>
+              <i data-lucide="wind" class="stat-icon"></i>
               <span class="stat-value"><%= weather.windSpeed %> km/h</span>
               <span class="stat-label">Wind</span>
             </div>
             <div class="stat-item">
-              <span class="stat-emoji">🌧️</span>
+              <i data-lucide="cloud-drizzle" class="stat-icon"></i>
               <span class="stat-value"><%= weather.pop %>%</span>
               <span class="stat-label">Rain %</span>
             </div>
@@ -131,10 +155,14 @@
          ═══════════════════════════════════════ -->
     <div class="predict-right">
       <div class="neo-card map-card">
-        <h3 class="map-title">📍 Location Map</h3>
+        <h3 class="map-title">
+          <i data-lucide="map-pin" class="title-icon-sm"></i>
+          Location Map
+        </h3>
         <div id="map" class="leaflet-map"></div>
         <% if (!weather) { %>
           <div class="map-placeholder" id="map-placeholder">
+            <i data-lucide="map" class="placeholder-icon"></i>
             <p>Search a city to see it on the map</p>
           </div>
         <% } %>
@@ -153,11 +181,11 @@
 
   <!-- Pass server-side weather data to client-side JS -->
   <script>
-    // Make weather data available to predict.js
     window.__WEATHER_DATA__ = <%- weather ? JSON.stringify(weather) : 'null' %>;
   </script>
 
   <!-- Client-side JS for autocomplete, filters, map -->
   <script src="/predict.js"></script>
+  <script>lucide.createIcons();</script>
 </body>
 </html>

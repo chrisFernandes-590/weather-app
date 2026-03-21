@@ -31,10 +31,13 @@
     <!-- Error State (geolocation denied / API error) -->
     <div class="error-state hidden" id="error-state">
       <div class="neo-card error-card">
-        <span class="error-emoji">🚫</span>
+        <i data-lucide="alert-circle" class="error-icon-svg"></i>
         <h2>Oops!</h2>
         <p id="error-message">Something went wrong.</p>
-        <button class="neo-btn" onclick="retryGeolocation()" id="retry-btn">Try Again</button>
+        <button class="neo-btn" onclick="retryGeolocation()" id="retry-btn">
+          <i data-lucide="refresh-cw" class="btn-icon"></i>
+          Try Again
+        </button>
       </div>
     </div>
 
@@ -45,7 +48,7 @@
       <div class="neo-card hero-card" id="hero-card">
         <div class="hero-top">
           <div class="hero-location">
-            <span class="location-pin">📍</span>
+            <i data-lucide="map-pin" class="location-icon"></i>
             <h1 id="city-name">—</h1>
           </div>
           <span class="hero-badge" id="condition-badge">—</span>
@@ -65,17 +68,17 @@
       <!-- Stats Grid -->
       <div class="stats-grid">
         <div class="neo-card stat-card">
-          <span class="stat-emoji">💧</span>
+          <i data-lucide="droplets" class="stat-icon"></i>
           <span class="stat-value" id="humidity-value">—</span>
           <span class="stat-label">Humidity</span>
         </div>
         <div class="neo-card stat-card">
-          <span class="stat-emoji">💨</span>
+          <i data-lucide="wind" class="stat-icon"></i>
           <span class="stat-value" id="wind-value">—</span>
           <span class="stat-label">Wind</span>
         </div>
         <div class="neo-card stat-card">
-          <span class="stat-emoji">🌡️</span>
+          <i data-lucide="thermometer" class="stat-icon"></i>
           <span class="stat-value" id="feels-like-value">—</span>
           <span class="stat-label">Feels Like</span>
         </div>
@@ -96,5 +99,6 @@
 
   <!-- Client-side JS for geolocation + dynamic UI -->
   <script src="/general.js"></script>
+  <script>lucide.createIcons();</script>
 </body>
 </html>
