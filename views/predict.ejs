@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <title>Weather Predictor — WeatherApp</title>
+</head>
+<body class="predict-body">
+
+  <%- include('partials/navbar') %>
+
+  <main class="main-content predict-layout">
+
+    <!-- ═══════════════════════════════════════
+         Left Column: Search + Filters + Result
+         ═══════════════════════════════════════ -->
+    <div class="predict-left">
+
+      <!-- Search Card -->
+      <div class="neo-card search-card">
+        <h1 class="predict-title">🔮 Weather Predictor</h1>
+        <p class="predict-subtitle">Will it rain tomorrow? Find out now.</p>
+
+        <!-- Search Form -->
+        <form action="/weather" method="POST" class="search-form" id="predict-form">
+          <div class="search-input-wrapper">
+            <input
+              type="text"
+              name="city"
+              id="city-input"
+              class="neo-input"
+              placeholder="Search a city..."
+              autocomplete="off"
+              required
+            />
+            <!-- Autocomplete dropdown -->
+            <div class="autocomplete-dropdown hidden" id="autocomplete-dropdown"></div>
+          </div>
+          <button type="submit" class="neo-btn search-btn" id="submit-btn">
+            Search 🔍
+          </button>
+        </form>
+
+        <!-- Filter Buttons -->
+        <div class="filter-bar" id="filter-bar">
+          <span class="filter-label">Filters:</span>
+          <button type="button" class="filter-btn" data-filter="rain">🌧️ Rain</button>
+          <button type="button" class="filter-btn" data-filter="clear">☀️ Sunny</button>
+          <button type="button" class="filter-btn" data-filter="clouds">☁️ Clouds</button>
+          <button type="button" class="filter-btn" data-filter="snow">❄️ Snow</button>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <% if (error) { %>
+        <div class="neo-card error-card" id="error-box">
+          <span class="error-emoji">⚠️</span>
+          <p><%= error %></p>
+        </div>
+      <% } %>
+
+      <!-- Weather Result -->
+      <% if (weather) { %>
+        <div class="neo-card result-card" id="weather-result" data-condition="<%= weather.main.toLowerCase() %>">
+
+          <!-- Location -->
+          <div class="result-header">
+            <h2>
+              <%= weather.city %><% if (weather.state) { %>, <%= weather.state %><% } %>, <%= weather.country %>
+            </h2>
+            <span class="result-date"><%= weather.date %></span>
+          </div>
+
+          <!-- Rain Badge -->
+          <div class="rain-badge <%= weather.willRain ? 'rain-yes' : 'rain-no' %>">
+            <% if (weather.willRain) { %>
+              <span>🌧️ Yes, it will rain tomorrow!</span>
+            <% } else { %>
+              <span>☀️ No rain expected tomorrow</span>
+            <% } %>
+          </div>
+
+          <!-- Condition Visual -->
+          <div class="result-visual">
+            <img
+              src="https://openweathermap.org/img/wn/<%= weather.icon %>@4x.png"
+              alt="<%= weather.description %>"
+              class="result-icon"
+            />
+            <span class="result-desc"><%= weather.description %></span>
+          </div>
+
+          <!-- Stats -->
+          <div class="result-stats">
+            <div class="stat-item">
+              <span class="stat-emoji">🌡️</span>
+              <span class="stat-value"><%= weather.tempDay %>°C</span>
+              <span class="stat-label">Temp</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-emoji">⬆️</span>
+              <span class="stat-value"><%= weather.tempMax %>°C</span>
+              <span class="stat-label">High</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-emoji">⬇️</span>
+              <span class="stat-value"><%= weather.tempMin %>°C</span>
+              <span class="stat-label">Low</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-emoji">💧</span>
+              <span class="stat-value"><%= weather.humidity %>%</span>
+              <span class="stat-label">Humidity</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-emoji">💨</span>
+              <span class="stat-value"><%= weather.windSpeed %> km/h</span>
+              <span class="stat-label">Wind</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-emoji">🌧️</span>
+              <span class="stat-value"><%= weather.pop %>%</span>
+              <span class="stat-label">Rain %</span>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         Right Column: Leaflet Map
+         ═══════════════════════════════════════ -->
+    <div class="predict-right">
+      <div class="neo-card map-card">
+        <h3 class="map-title">📍 Location Map</h3>
+        <div id="map" class="leaflet-map"></div>
+        <% if (!weather) { %>
+          <div class="map-placeholder" id="map-placeholder">
+            <p>Search a city to see it on the map</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    Powered by <a href="https://openweathermap.org/" target="_blank" rel="noopener">OpenWeatherMap</a>
+  </footer>
+
+  <!-- Leaflet.js -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Pass server-side weather data to client-side JS -->
+  <script>
+    // Make weather data available to predict.js
+    window.__WEATHER_DATA__ = <%- weather ? JSON.stringify(weather) : 'null' %>;
+  </script>
+
+  <!-- Client-side JS for autocomplete, filters, map -->
+  <script src="/predict.js"></script>
+</body>
+</html>

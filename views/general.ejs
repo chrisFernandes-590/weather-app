@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <title>Current Weather — WeatherApp</title>
+</head>
+<body class="weather-default" id="app-body">
+
+  <%- include('partials/navbar') %>
+
+  <!-- ═══════════════════════════════════════
+       Weather Effects Container (animated)
+       ═══════════════════════════════════════ -->
+  <div class="weather-effects" id="weather-effects" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════
+       Main Content
+       ═══════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- Loading State -->
+    <div class="loading-state" id="loading-state">
+      <div class="loader-brutalist">
+        <div class="loader-box"></div>
+        <div class="loader-box"></div>
+        <div class="loader-box"></div>
+      </div>
+      <p class="loading-text">Detecting your location...</p>
+    </div>
+
+    <!-- Error State (geolocation denied / API error) -->
+    <div class="error-state hidden" id="error-state">
+      <div class="neo-card error-card">
+        <span class="error-emoji">🚫</span>
+        <h2>Oops!</h2>
+        <p id="error-message">Something went wrong.</p>
+        <button class="neo-btn" onclick="retryGeolocation()" id="retry-btn">Try Again</button>
+      </div>
+    </div>
+
+    <!-- Weather Display (hidden until data loads) -->
+    <div class="weather-display hidden" id="weather-display">
+
+      <!-- City & Condition Header -->
+      <div class="neo-card hero-card" id="hero-card">
+        <div class="hero-top">
+          <div class="hero-location">
+            <span class="location-pin">📍</span>
+            <h1 id="city-name">—</h1>
+          </div>
+          <span class="hero-badge" id="condition-badge">—</span>
+        </div>
+
+        <div class="hero-main">
+          <img id="weather-icon" class="hero-icon" src="" alt="weather icon" />
+          <div class="hero-temp">
+            <span class="temp-value" id="temp-value">—</span>
+            <span class="temp-unit">°C</span>
+          </div>
+        </div>
+
+        <p class="hero-desc" id="weather-desc">—</p>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="neo-card stat-card">
+          <span class="stat-emoji">💧</span>
+          <span class="stat-value" id="humidity-value">—</span>
+          <span class="stat-label">Humidity</span>
+        </div>
+        <div class="neo-card stat-card">
+          <span class="stat-emoji">💨</span>
+          <span class="stat-value" id="wind-value">—</span>
+          <span class="stat-label">Wind</span>
+        </div>
+        <div class="neo-card stat-card">
+          <span class="stat-emoji">🌡️</span>
+          <span class="stat-value" id="feels-like-value">—</span>
+          <span class="stat-label">Feels Like</span>
+        </div>
+      </div>
+
+      <!-- Auto-refresh info -->
+      <p class="refresh-info">
+        <span class="refresh-dot"></span>
+        Auto-refreshes every 3 hours
+      </p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    Powered by <a href="https://openweathermap.org/" target="_blank" rel="noopener">OpenWeatherMap</a>
+  </footer>
+
+  <!-- Client-side JS for geolocation + dynamic UI -->
+  <script src="/general.js"></script>
+</body>
+</html>
