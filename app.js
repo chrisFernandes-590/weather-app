@@ -89,40 +89,27 @@ app.get("/api/weather-current", async (req, res) => {
   }
 
   try {
-    // Reverse geocoding to get the city name from coordinates
-    const geoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
-    const geoResponse = await axios.get(geoUrl);
-
-    let cityName = "Unknown Location";
-    let state = null;
-    let country = "";
-    if (geoResponse.data && geoResponse.data.length > 0) {
-      cityName = geoResponse.data[0].name;
-      state = geoResponse.data[0].state || null;
-      country = geoResponse.data[0].country;
-    }
-
-    // Current weather + daily forecast using One Call API 3.0
-    const weatherUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${API_KEY}`;
+    // Current weather using FREE Current Weather API 2.5
+    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`;
     const weatherResponse = await axios.get(weatherUrl);
-    const current = weatherResponse.data.current;
+    const data = weatherResponse.data;
 
     res.json({
-      city: cityName,
-      state,
-      country,
-      temp: Math.round(current.temp),
-      feelsLike: Math.round(current.feels_like),
-      humidity: current.humidity,
-      windSpeed: Math.round(current.wind_speed * 3.6), // m/s → km/h
-      description: current.weather[0].description,
-      icon: current.weather[0].icon,
-      conditionId: current.weather[0].id,
-      main: current.weather[0].main,
-      dt: current.dt,
-      sunrise: current.sunrise,
-      sunset: current.sunset,
-      timezone_offset: weatherResponse.data.timezone_offset,
+      city: data.name,
+      state: null,
+      country: data.sys.country,
+      temp: Math.round(data.main.temp),
+      feelsLike: Math.round(data.main.feels_like),
+      humidity: data.main.humidity,
+      windSpeed: Math.round(data.wind.speed * 3.6), // m/s → km/h
+      description: data.weather[0].description,
+      icon: data.weather[0].icon,
+      conditionId: data.weather[0].id,
+      main: data.weather[0].main,
+      dt: data.dt,
+      sunrise: data.sys.sunrise,
+      sunset: data.sys.sunset,
+      timezone_offset: data.timezone,
     });
   } catch (err) {
     // Log the raw API failure message to the console
@@ -172,7 +159,7 @@ app.get("/api/suggestions", (req, res) => {
 
 /**
  * POST /weather — Process city search for the Predictor View
- * Uses Geocoding API → One Call API 3.0 → tomorrow's forecast
+ * Uses Geocoding API → FREE 5-Day Forecast API 2.5 → tomorrow's forecast
  */
 app.post("/weather", async (req, res) => {
   const city = req.body.city;
@@ -213,15 +200,46 @@ app.post("/weather", async (req, res) => {
 
     const { lat, lon, name, state, country } = geoResponse.data[0];
 
-    // Step 2: One Call API → daily forecast
-    const weatherUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts&units=metric&appid=${API_KEY}`;
-    const weatherResponse = await axios.get(weatherUrl);
-    const tomorrow = weatherResponse.data.daily[1]; // daily[1] = tomorrow
+    // Step 2: FREE 5-Day/3-Hour Forecast API → filter tomorrow's entries
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`;
+    const forecastResponse = await axios.get(forecastUrl);
+    const forecastList = forecastResponse.data.list;
 
-    // Step 3: Determine rain
-    const condition = tomorrow.weather[0];
-    const conditionId = condition.id;
-    const willRain = conditionId >= 200 && conditionId < 600;
+    // Filter entries for tomorrow's date
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowDateStr = tomorrow.toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+    const tomorrowEntries = forecastList.filter((entry) =>
+      entry.dt_txt.startsWith(tomorrowDateStr)
+    );
+
+    if (tomorrowEntries.length === 0) {
+      return res.render("predict", {
+        activePage: "predict",
+        weather: null,
+        error: "Could not get tomorrow's forecast data. Please try again.",
+      });
+    }
+
+    // Step 3: Aggregate tomorrow's data from 3-hour intervals
+    //   - Use the midday entry (12:00) as the representative condition
+    //   - Calculate min/max from all entries
+    const middayEntry = tomorrowEntries.find((e) => e.dt_txt.includes("12:00")) || tomorrowEntries[0];
+
+    const temps = tomorrowEntries.map((e) => e.main.temp);
+    const humidities = tomorrowEntries.map((e) => e.main.humidity);
+    const winds = tomorrowEntries.map((e) => e.wind.speed);
+    const pops = tomorrowEntries.map((e) => e.pop || 0);
+
+    // Determine rain: check if ANY 3-hour slot has rain/thunderstorm/drizzle
+    const willRain = tomorrowEntries.some((e) => {
+      const id = e.weather[0].id;
+      return id >= 200 && id < 600;
+    });
+
+    const condition = middayEntry.weather[0];
 
     // Step 4: Build result
     const weatherData = {
@@ -234,14 +252,14 @@ app.post("/weather", async (req, res) => {
       description: condition.description,
       icon: condition.icon,
       main: condition.main,
-      conditionId,
-      tempDay: Math.round(tomorrow.temp.day),
-      tempMin: Math.round(tomorrow.temp.min),
-      tempMax: Math.round(tomorrow.temp.max),
-      humidity: tomorrow.humidity,
-      windSpeed: Math.round(tomorrow.wind_speed * 3.6),
-      pop: Math.round((tomorrow.pop || 0) * 100),
-      date: new Date(tomorrow.dt * 1000).toLocaleDateString("en-US", {
+      conditionId: condition.id,
+      tempDay: Math.round(middayEntry.main.temp),
+      tempMin: Math.round(Math.min(...temps)),
+      tempMax: Math.round(Math.max(...temps)),
+      humidity: Math.round(humidities.reduce((a, b) => a + b, 0) / humidities.length),
+      windSpeed: Math.round((winds.reduce((a, b) => a + b, 0) / winds.length) * 3.6),
+      pop: Math.round(Math.max(...pops) * 100),
+      date: tomorrow.toLocaleDateString("en-US", {
         weekday: "long",
         year: "numeric",
         month: "long",
