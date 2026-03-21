@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Check if it will rain tomorrow in any city around the world using real-time weather data." />
+  <title>Rain Tomorrow? — Weather Forecast</title>
+
+  <!-- Google Fonts — Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════
+       Animated background blobs
+       ════════════════════════════════════════════ -->
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       Main Card
+       ════════════════════════════════════════════ -->
+  <main class="card" id="main-card">
+    <h1 class="title">
+      <span class="title-icon">🌦️</span>
+      Rain Tomorrow?
+    </h1>
+    <p class="subtitle">Enter a city to find out if you'll need an umbrella.</p>
+
+    <!-- ── Search Form ── -->
+    <form action="/weather" method="POST" class="search-form" id="weather-form">
+      <div class="input-wrapper">
+        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          name="city"
+          id="city-input"
+          placeholder="e.g. London, Tokyo, New York…"
+          autocomplete="off"
+          required
+        />
+      </div>
+      <button type="submit" id="submit-btn" class="btn">Check Weather</button>
+    </form>
+
+    <!-- ── Error Message ── -->
+    <% if (error) { %>
+      <div class="error-box" id="error-box">
+        <span class="error-icon">⚠️</span>
+        <p><%= error %></p>
+      </div>
+    <% } %>
+
+    <!-- ── Weather Result ── -->
+    <% if (weather) { %>
+      <div class="result <%= weather.willRain ? 'rainy' : 'sunny' %>" id="weather-result">
+
+        <!-- Location header -->
+        <div class="result-location">
+          <h2>
+            <%= weather.city %><% if (weather.state) { %>, <%= weather.state %><% } %>, <%= weather.country %>
+          </h2>
+          <span class="result-label">Tomorrow's Forecast</span>
+        </div>
+
+        <!-- Rain status — the main answer -->
+        <div class="rain-status">
+          <% if (weather.willRain) { %>
+            <div class="rain-badge rain-yes">
+              <span class="rain-emoji">🌧️</span>
+              <span>Yes, it will rain tomorrow</span>
+            </div>
+          <% } else { %>
+            <div class="rain-badge rain-no">
+              <span class="rain-emoji">☀️</span>
+              <span>No rain expected tomorrow</span>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Weather icon & description -->
+        <div class="weather-visual">
+          <img
+            src="https://openweathermap.org/img/wn/<%= weather.icon %>@4x.png"
+            alt="<%= weather.description %>"
+            class="weather-icon-img"
+          />
+          <p class="weather-desc"><%= weather.description %></p>
+        </div>
+
+        <!-- Detail cards -->
+        <div class="detail-grid">
+          <div class="detail-card">
+            <span class="detail-emoji">🌡️</span>
+            <span class="detail-value"><%= weather.tempDay %>°C</span>
+            <span class="detail-label">Temperature</span>
+          </div>
+          <div class="detail-card">
+            <span class="detail-emoji">⬆️</span>
+            <span class="detail-value"><%= weather.tempMax %>°C</span>
+            <span class="detail-label">High</span>
+          </div>
+          <div class="detail-card">
+            <span class="detail-emoji">⬇️</span>
+            <span class="detail-value"><%= weather.tempMin %>°C</span>
+            <span class="detail-label">Low</span>
+          </div>
+          <div class="detail-card">
+            <span class="detail-emoji">💧</span>
+            <span class="detail-value"><%= weather.humidity %>%</span>
+            <span class="detail-label">Humidity</span>
+          </div>
+          <div class="detail-card">
+            <span class="detail-emoji">💨</span>
+            <span class="detail-value"><%= weather.windSpeed %> km/h</span>
+            <span class="detail-label">Wind</span>
+          </div>
+          <div class="detail-card">
+            <span class="detail-emoji">🌧️</span>
+            <span class="detail-value"><%= weather.pop %>%</span>
+            <span class="detail-label">Rain Chance</span>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    Powered by <a href="https://openweathermap.org/" target="_blank" rel="noopener">OpenWeatherMap</a>
+  </footer>
+
+</body>
+</html>
