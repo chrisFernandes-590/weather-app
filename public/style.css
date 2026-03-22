@@ -1298,6 +1298,7 @@ body {
   align-items: center;
   gap: 1rem;
   padding: 1.25rem;
+  min-width: 0;
 }
 
 .summary-icon-wrap {
@@ -1325,12 +1326,22 @@ body {
 .summary-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .summary-value {
   font-size: 1.6rem;
   font-weight: 700;
   line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#most-used {
+  font-size: 1.15rem;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .summary-label {
