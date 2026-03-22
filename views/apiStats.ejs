@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <title>API Stats — WeatherApp</title>
+</head>
+<body class="stats-body">
+
+  <%- include('partials/navbar') %>
+
+  <main class="main-content">
+
+    <!-- ═══════════════════════════════════════
+         Dashboard Header
+         ═══════════════════════════════════════ -->
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">
+        <i data-lucide="bar-chart-3" class="title-icon"></i>
+        API Usage Dashboard
+      </h1>
+      <div class="dashboard-actions">
+        <button class="neo-btn btn-sm" id="refresh-btn">
+          <i data-lucide="refresh-cw" class="btn-icon"></i>
+          Refresh
+        </button>
+        <a href="/api/logs/download" class="neo-btn btn-sm btn-outline" id="download-btn">
+          <i data-lucide="download" class="btn-icon"></i>
+          CSV
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         Section A: Summary Cards + Progress Bar
+         ═══════════════════════════════════════ -->
+    <div class="summary-grid">
+      <div class="neo-card summary-card">
+        <div class="summary-icon-wrap summary-blue">
+          <i data-lucide="activity" class="summary-icon"></i>
+        </div>
+        <div class="summary-info">
+          <span class="summary-value" id="today-count">0</span>
+          <span class="summary-label">Requests Today</span>
+        </div>
+      </div>
+
+      <div class="neo-card summary-card">
+        <div class="summary-icon-wrap summary-green">
+          <i data-lucide="battery-charging" class="summary-icon"></i>
+        </div>
+        <div class="summary-info">
+          <span class="summary-value" id="remaining-count">1000</span>
+          <span class="summary-label">Remaining</span>
+        </div>
+      </div>
+
+      <div class="neo-card summary-card">
+        <div class="summary-icon-wrap summary-yellow">
+          <i data-lucide="trending-up" class="summary-icon"></i>
+        </div>
+        <div class="summary-info">
+          <span class="summary-value" id="most-used">—</span>
+          <span class="summary-label">Most Used API</span>
+        </div>
+      </div>
+
+      <div class="neo-card summary-card">
+        <div class="summary-icon-wrap summary-red">
+          <i data-lucide="alert-triangle" class="summary-icon"></i>
+        </div>
+        <div class="summary-info">
+          <span class="summary-value" id="error-count">0</span>
+          <span class="summary-label">Errors Today</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Bar: Daily Usage -->
+    <div class="neo-card progress-card">
+      <div class="progress-header">
+        <span class="progress-title">Daily Usage</span>
+        <span class="progress-numbers" id="progress-numbers">0 / 1000</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%"></div>
+      </div>
+      <span class="progress-warning hidden" id="progress-warning">
+        <i data-lucide="alert-circle" class="warning-icon"></i>
+        <span id="warning-text"></span>
+      </span>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         Section B: Charts
+         ═══════════════════════════════════════ -->
+    <div class="charts-grid">
+      <!-- Bar Chart: Requests per Day -->
+      <div class="neo-card chart-card">
+        <h3 class="chart-title">
+          <i data-lucide="bar-chart-2" class="chart-title-icon"></i>
+          Requests Per Day
+        </h3>
+        <div class="chart-wrap">
+          <canvas id="dailyChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Pie Chart: Endpoint Distribution -->
+      <div class="neo-card chart-card">
+        <h3 class="chart-title">
+          <i data-lucide="pie-chart" class="chart-title-icon"></i>
+          Endpoint Distribution
+        </h3>
+        <div class="chart-wrap chart-wrap-pie">
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Line Chart: Hourly Timeline -->
+      <div class="neo-card chart-card chart-card-wide">
+        <h3 class="chart-title">
+          <i data-lucide="trending-up" class="chart-title-icon"></i>
+          Today's Hourly Activity
+        </h3>
+        <div class="chart-wrap">
+          <canvas id="hourlyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         Section C: Request Logs Table
+         ═══════════════════════════════════════ -->
+    <div class="neo-card logs-card">
+      <div class="logs-header">
+        <h3 class="logs-title">
+          <i data-lucide="scroll-text" class="chart-title-icon"></i>
+          Request Logs
+        </h3>
+        <div class="logs-filters">
+          <select class="neo-select" id="filter-endpoint">
+            <option value="">All Endpoints</option>
+            <option value="Current Weather">Current Weather</option>
+            <option value="Geocoding">Geocoding</option>
+            <option value="5-Day Forecast">5-Day Forecast</option>
+          </select>
+          <select class="neo-select" id="filter-status">
+            <option value="">All Status</option>
+            <option value="success">Success</option>
+            <option value="error">Error</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="logs-table-wrap">
+        <table class="logs-table" id="logs-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Endpoint</th>
+              <th>City</th>
+              <th>Status</th>
+              <th>Code</th>
+            </tr>
+          </thead>
+          <tbody id="logs-tbody">
+            <tr>
+              <td colspan="5" class="logs-empty">Loading logs...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="logs-pagination">
+        <button class="neo-btn btn-sm" id="prev-page" disabled>
+          <i data-lucide="chevron-left" class="btn-icon"></i> Prev
+        </button>
+        <span class="page-info" id="page-info">Page 1</span>
+        <button class="neo-btn btn-sm" id="next-page">
+          Next <i data-lucide="chevron-right" class="btn-icon"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Auto-refresh indicator -->
+    <p class="refresh-info">
+      <span class="refresh-dot"></span>
+      Auto-refreshes every 15 seconds
+    </p>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    Powered by <a href="https://openweathermap.org/" target="_blank" rel="noopener">OpenWeatherMap</a>
+  </footer>
+
+  <!-- Client-side JS -->
+  <script src="/apiStats.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

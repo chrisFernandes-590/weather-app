@@ -44,58 +44,80 @@
     <!-- Weather Display (hidden until data loads) -->
     <div class="weather-display hidden" id="weather-display">
 
-      <!-- City & Condition Header -->
-      <div class="neo-card hero-card" id="hero-card">
-        <div class="hero-top">
-          <div class="hero-location">
-            <i data-lucide="map-pin" class="location-icon"></i>
-            <h1 id="city-name">—</h1>
+      <!-- Two-column layout: weather info + map -->
+      <div class="general-layout">
+
+        <!-- Left: Weather Info -->
+        <div class="general-left">
+          <!-- City & Condition Header -->
+          <div class="neo-card hero-card" id="hero-card">
+            <div class="hero-top">
+              <div class="hero-location">
+                <i data-lucide="map-pin" class="location-icon"></i>
+                <h1 id="city-name">—</h1>
+              </div>
+              <span class="hero-badge" id="condition-badge">—</span>
+            </div>
+
+            <div class="hero-main">
+              <img id="weather-icon" class="hero-icon" src="" alt="weather icon" />
+              <div class="hero-temp">
+                <span class="temp-value" id="temp-value">—</span>
+                <span class="temp-unit">°C</span>
+              </div>
+            </div>
+
+            <p class="hero-desc" id="weather-desc">—</p>
           </div>
-          <span class="hero-badge" id="condition-badge">—</span>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="neo-card stat-card">
+              <i data-lucide="droplets" class="stat-icon"></i>
+              <span class="stat-value" id="humidity-value">—</span>
+              <span class="stat-label">Humidity</span>
+            </div>
+            <div class="neo-card stat-card">
+              <i data-lucide="wind" class="stat-icon"></i>
+              <span class="stat-value" id="wind-value">—</span>
+              <span class="stat-label">Wind</span>
+            </div>
+            <div class="neo-card stat-card">
+              <i data-lucide="thermometer" class="stat-icon"></i>
+              <span class="stat-value" id="feels-like-value">—</span>
+              <span class="stat-label">Feels Like</span>
+            </div>
+          </div>
+
+          <!-- Auto-refresh info -->
+          <p class="refresh-info">
+            <span class="refresh-dot"></span>
+            Auto-refreshes every 3 hours
+          </p>
         </div>
 
-        <div class="hero-main">
-          <img id="weather-icon" class="hero-icon" src="" alt="weather icon" />
-          <div class="hero-temp">
-            <span class="temp-value" id="temp-value">—</span>
-            <span class="temp-unit">°C</span>
+        <!-- Right: Location Map -->
+        <div class="general-right">
+          <div class="neo-card map-card">
+            <h3 class="map-title">
+              <i data-lucide="map-pin" class="title-icon-sm"></i>
+              Your Location
+            </h3>
+            <div id="general-map" class="leaflet-map"></div>
           </div>
         </div>
 
-        <p class="hero-desc" id="weather-desc">—</p>
       </div>
-
-      <!-- Stats Grid -->
-      <div class="stats-grid">
-        <div class="neo-card stat-card">
-          <i data-lucide="droplets" class="stat-icon"></i>
-          <span class="stat-value" id="humidity-value">—</span>
-          <span class="stat-label">Humidity</span>
-        </div>
-        <div class="neo-card stat-card">
-          <i data-lucide="wind" class="stat-icon"></i>
-          <span class="stat-value" id="wind-value">—</span>
-          <span class="stat-label">Wind</span>
-        </div>
-        <div class="neo-card stat-card">
-          <i data-lucide="thermometer" class="stat-icon"></i>
-          <span class="stat-value" id="feels-like-value">—</span>
-          <span class="stat-label">Feels Like</span>
-        </div>
-      </div>
-
-      <!-- Auto-refresh info -->
-      <p class="refresh-info">
-        <span class="refresh-dot"></span>
-        Auto-refreshes every 3 hours
-      </p>
     </div>
   </main>
 
   <!-- Footer -->
-  <footer class="footer">
+  <footer class="footer" id="app-footer">
     Powered by <a href="https://openweathermap.org/" target="_blank" rel="noopener">OpenWeatherMap</a>
   </footer>
+
+  <!-- Leaflet.js -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <!-- Client-side JS for geolocation + dynamic UI -->
   <script src="/general.js"></script>

@@ -1,10 +1,13 @@
 // ──────────────────────────────────────────────
 //  general.js — Client-side logic for General View
-//  Handles: geolocation, weather fetch, dynamic backgrounds
+//  Handles: geolocation, weather fetch, dynamic backgrounds,
+//           animated effects, Leaflet map, theme blending
 // ──────────────────────────────────────────────
 
 // DOM references
 const body = document.getElementById("app-body");
+const navbar = document.getElementById("navbar");
+const footer = document.getElementById("app-footer");
 const loadingState = document.getElementById("loading-state");
 const errorState = document.getElementById("error-state");
 const weatherDisplay = document.getElementById("weather-display");
@@ -21,8 +24,16 @@ const humidityValue = document.getElementById("humidity-value");
 const windValue = document.getElementById("wind-value");
 const feelsLikeValue = document.getElementById("feels-like-value");
 
+// Map reference
+let generalMap = null;
+let generalMarker = null;
+
 // Refresh interval: 3 hours in milliseconds
 const REFRESH_INTERVAL = 3 * 60 * 60 * 1000;
+
+// User coordinates for map
+let userLat = null;
+let userLon = null;
 
 // ──────────────────────────────────────────────
 //  Show / Hide states
@@ -42,7 +53,6 @@ function showError(msg) {
 
 function showWeather() {
   loadingState.classList.add("hidden");
-  errorState.classList.remove("hidden");
   errorState.classList.add("hidden");
   weatherDisplay.classList.remove("hidden");
 }
@@ -60,8 +70,9 @@ function getWeatherByLocation() {
 
   navigator.geolocation.getCurrentPosition(
     async (position) => {
-      const { latitude, longitude } = position.coords;
-      await fetchWeather(latitude, longitude);
+      userLat = position.coords.latitude;
+      userLon = position.coords.longitude;
+      await fetchWeather(userLat, userLon);
     },
     (err) => {
       let msg = "Unable to get your location.";
@@ -97,6 +108,9 @@ async function fetchWeather(lat, lon) {
 
     updateUI(data);
     showWeather();
+    initMap(lat, lon, data);
+    // Re-render Lucide icons for dynamically shown content
+    lucide.createIcons();
   } catch (err) {
     // Network-level failure (no response at all)
     console.error("──── Network Error ────");
@@ -123,16 +137,25 @@ function updateUI(data) {
   windValue.textContent = `${data.windSpeed} km/h`;
   feelsLikeValue.textContent = `${data.feelsLike}°C`;
 
-  // Apply dynamic background
+  // Apply dynamic background + theme blending
   applyDynamicBackground(data);
 }
 
 // ──────────────────────────────────────────────
 //  Dynamic background based on weather + time
+//  Also blends navbar & footer with the theme
 // ──────────────────────────────────────────────
 function applyDynamicBackground(data) {
-  // Remove all previous weather classes
-  body.className = "";
+  // Remove all previous weather classes from body, navbar, footer
+  const weatherClasses = [
+    "weather-default", "weather-clear", "weather-rain", "weather-thunderstorm",
+    "weather-snow", "weather-night", "weather-clouds", "weather-mist",
+    "theme-dark", "theme-rain", "theme-snow", "theme-clear", "theme-clouds", "theme-mist"
+  ];
+
+  body.classList.remove(...weatherClasses);
+  navbar.classList.remove(...weatherClasses);
+  footer.classList.remove(...weatherClasses);
 
   const condId = data.conditionId;
   const now = data.dt;
@@ -142,22 +165,36 @@ function applyDynamicBackground(data) {
 
   // Determine weather class
   let weatherClass = "weather-default";
+  let themeClass = "";
 
   if (condId >= 200 && condId < 300) {
     weatherClass = "weather-thunderstorm";
+    themeClass = "theme-dark";
   } else if (condId >= 300 && condId < 600) {
     weatherClass = "weather-rain";
+    themeClass = "theme-rain";
   } else if (condId >= 600 && condId < 700) {
     weatherClass = "weather-snow";
+    themeClass = "theme-snow";
   } else if (condId >= 700 && condId < 800) {
     weatherClass = "weather-mist";
+    themeClass = "theme-mist";
   } else if (condId === 800) {
     weatherClass = isNight ? "weather-night" : "weather-clear";
+    themeClass = isNight ? "theme-dark" : "theme-clear";
   } else if (condId > 800) {
     weatherClass = isNight ? "weather-night" : "weather-clouds";
+    themeClass = isNight ? "theme-dark" : "theme-clouds";
   }
 
+  // Apply to body (background + text color)
   body.classList.add(weatherClass);
+
+  // Apply theme class to navbar and footer for blending
+  if (themeClass) {
+    navbar.classList.add(themeClass);
+    footer.classList.add(themeClass);
+  }
 
   // Create animated effects
   createWeatherEffects(weatherClass);
@@ -213,6 +250,37 @@ function createWeatherEffects(weatherClass) {
       effectsContainer.appendChild(cloud);
     }
   }
+}
+
+// ──────────────────────────────────────────────
+//  Leaflet Map for user's current location
+// ──────────────────────────────────────────────
+function initMap(lat, lon, data) {
+  const mapEl = document.getElementById("general-map");
+  if (!mapEl) return;
+
+  // Destroy existing map if any
+  if (generalMap) {
+    generalMap.remove();
+    generalMap = null;
+  }
+
+  generalMap = L.map("general-map").setView([lat, lon], 12);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://openstreetmap.org">OSM</a>',
+    maxZoom: 18,
+  }).addTo(generalMap);
+
+  generalMarker = L.marker([lat, lon]).addTo(generalMap);
+  generalMarker.bindPopup(
+    `<strong>${data.city}, ${data.country}</strong><br>${data.description} · ${data.temp}°C`
+  ).openPopup();
+
+  // Fix map rendering (Leaflet needs a resize when container becomes visible)
+  setTimeout(() => {
+    generalMap.invalidateSize();
+  }, 300);
 }
 
 // ──────────────────────────────────────────────

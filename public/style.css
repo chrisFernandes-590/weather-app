@@ -45,7 +45,7 @@ body {
   min-height: 100vh;
   color: var(--black);
   overflow-x: hidden;
-  transition: background-color 0.6s ease, color 0.3s ease;
+  transition: background-color 0.8s ease, color 0.5s ease;
 }
 
 /* ══════════════════════════════════════════════
@@ -61,6 +61,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 1000;
+  transition: background 0.8s ease, border-color 0.5s ease, color 0.5s ease;
 }
 
 .navbar-brand {
@@ -221,7 +222,7 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 1.5rem;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.5s ease, color 0.5s ease;
 }
 
 .neo-card:hover {
@@ -309,6 +310,7 @@ body {
   border-top: var(--border);
   background: var(--grey);
   color: var(--dark-grey);
+  transition: background 0.8s ease, color 0.5s ease, border-color 0.5s ease;
 }
 
 .footer a {
@@ -316,6 +318,87 @@ body {
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
+  transition: color 0.3s ease;
+}
+
+/* ══════════════════════════════════════════════
+   THEME BLENDING — Navbar & Footer
+   Adapts chrome to match weather conditions
+   ══════════════════════════════════════════════ */
+
+/* Dark Theme (night, thunderstorm) */
+.navbar.theme-dark {
+  background: #16163a;
+  border-bottom-color: #333;
+  color: var(--white);
+}
+
+.navbar.theme-dark .navbar-brand { color: var(--white); }
+.navbar.theme-dark .nav-link { background: #1a1a3e; color: #ccc; border-color: #444; box-shadow: 3px 3px 0px #333; }
+.navbar.theme-dark .nav-link:hover { color: var(--white); }
+.navbar.theme-dark .nav-link.active { background: var(--yellow); color: var(--black); border-color: var(--black); }
+
+.footer.theme-dark {
+  background: #0f0f23;
+  color: #888;
+  border-top-color: #333;
+}
+.footer.theme-dark a { color: var(--yellow); }
+
+/* Rain Theme */
+.navbar.theme-rain {
+  background: #2c3e50;
+  border-bottom-color: #1a252f;
+  color: var(--white);
+}
+.navbar.theme-rain .navbar-brand { color: var(--white); }
+.navbar.theme-rain .nav-link { background: #34495e; color: #bbb; border-color: #1a252f; box-shadow: 3px 3px 0px #1a252f; }
+.navbar.theme-rain .nav-link:hover { color: var(--white); }
+.navbar.theme-rain .nav-link.active { background: var(--blue); color: var(--black); border-color: var(--black); }
+
+.footer.theme-rain {
+  background: #2c3e50;
+  color: #8899a6;
+  border-top-color: #1a252f;
+}
+.footer.theme-rain a { color: var(--blue); }
+
+/* Snow Theme */
+.navbar.theme-snow {
+  background: #dfe6ed;
+  border-bottom-color: #bbb;
+}
+.footer.theme-snow {
+  background: #cdd5de;
+  border-top-color: #bbb;
+}
+
+/* Clear/Sunny Theme */
+.navbar.theme-clear {
+  background: #fff3b0;
+}
+.footer.theme-clear {
+  background: #fff3b0;
+}
+
+/* Cloudy Theme */
+.navbar.theme-clouds {
+  background: #b2bec3;
+  border-bottom-color: #95a5a6;
+}
+.footer.theme-clouds {
+  background: #b2bec3;
+  border-top-color: #95a5a6;
+}
+
+/* Mist Theme */
+.navbar.theme-mist {
+  background: #c0c0c0;
+  border-bottom-color: #aaa;
+}
+.footer.theme-mist {
+  background: #bbb;
+  border-top-color: #aaa;
 }
 
 /* ══════════════════════════════════════════════════
@@ -719,6 +802,58 @@ body {
 }
 
 /* ══════════════════════════════════════════════
+   GENERAL VIEW — Two-Column Layout
+   ══════════════════════════════════════════════ */
+.general-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.general-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.general-right {
+  position: sticky;
+  top: 90px;
+}
+
+/* Staggered card entrance animations */
+.weather-display .hero-card {
+  animation: cardSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0s;
+}
+
+.weather-display .stats-grid .stat-card:nth-child(1) {
+  animation: cardSlideIn 0.4s ease both;
+  animation-delay: 0.15s;
+}
+
+.weather-display .stats-grid .stat-card:nth-child(2) {
+  animation: cardSlideIn 0.4s ease both;
+  animation-delay: 0.25s;
+}
+
+.weather-display .stats-grid .stat-card:nth-child(3) {
+  animation: cardSlideIn 0.4s ease both;
+  animation-delay: 0.35s;
+}
+
+.weather-display .map-card {
+  animation: cardSlideIn 0.5s ease both;
+  animation-delay: 0.4s;
+}
+
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ══════════════════════════════════════════════
    PREDICT VIEW — Layout
    ══════════════════════════════════════════════ */
 .predict-body {
@@ -1035,10 +1170,12 @@ body {
    RESPONSIVE
    ══════════════════════════════════════════════ */
 @media (max-width: 900px) {
+  .general-layout,
   .predict-layout {
     grid-template-columns: 1fr;
   }
 
+  .general-right,
   .predict-right {
     position: static;
   }
@@ -1093,5 +1230,398 @@ body {
 
   .filter-bar {
     justify-content: center;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   API STATS DASHBOARD
+   ══════════════════════════════════════════════════ */
+
+.stats-body {
+  background: var(--grey);
+}
+
+/* ── Dashboard Header ── */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.dashboard-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.title-icon {
+  width: 32px;
+  height: 32px;
+  stroke-width: 2.5;
+}
+
+.dashboard-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.btn-outline {
+  background: var(--white);
+  color: var(--black);
+}
+
+.btn-outline:hover {
+  background: var(--black);
+  color: var(--white);
+}
+
+/* ── Summary Cards Grid ── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.summary-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border: var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.summary-icon {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.5;
+}
+
+.summary-blue { background: #74b9ff; }
+.summary-green { background: #55efc4; }
+.summary-yellow { background: var(--yellow); }
+.summary-red { background: #ff6b6b; }
+
+.summary-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.summary-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--dark-grey);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Color helpers */
+.text-safe { color: #00b894; }
+.text-warning { color: #e17055; }
+.text-danger { color: #d63031; }
+
+/* ── Progress Bar ── */
+.progress-card {
+  margin-bottom: 1.5rem;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.progress-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.progress-numbers {
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 26px;
+  background: var(--grey);
+  border: var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  transition: width 0.6s ease, background 0.4s ease;
+  border-radius: var(--radius);
+}
+
+.progress-safe { background: #55efc4; }
+.progress-warning { background: #ffeaa7; }
+.progress-danger { background: #ff6b6b; }
+
+.progress-warning:not(.hidden) {
+  margin-top: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #d63031;
+}
+
+.warning-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.5;
+}
+
+/* ── Charts Grid ── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-card {
+  padding: 1.25rem;
+}
+
+.chart-card-wide {
+  grid-column: 1 / -1;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.chart-title-icon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.5;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 250px;
+}
+
+.chart-wrap-pie {
+  height: 280px;
+}
+
+/* ── Logs Card ── */
+.logs-card {
+  margin-bottom: 1rem;
+}
+
+.logs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.logs-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.logs-filters {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Neo-brutalism select */
+.neo-select {
+  padding: 0.45rem 0.75rem;
+  border: var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: box-shadow 0.15s;
+}
+
+.neo-select:focus {
+  box-shadow: var(--shadow-sm);
+}
+
+/* Table */
+.logs-table-wrap {
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  border: var(--border);
+  border-radius: var(--radius);
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.logs-table th {
+  background: var(--black);
+  color: var(--white);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.logs-table td {
+  padding: 0.65rem 1rem;
+  border-bottom: 2px solid var(--grey);
+  font-weight: 500;
+}
+
+.logs-table tbody tr:hover {
+  background: #f0f0f0;
+}
+
+.log-time {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.log-city {
+  font-weight: 700;
+}
+
+.log-code {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.logs-empty {
+  text-align: center;
+  padding: 2rem !important;
+  color: var(--dark-grey);
+  font-weight: 600;
+}
+
+/* Endpoint tag */
+.endpoint-tag {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border: 2px solid var(--black);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #e8e8e8;
+  white-space: nowrap;
+}
+
+/* Status badge */
+.status-badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border: 2px solid var(--black);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.status-success {
+  background: #55efc4;
+  color: var(--black);
+}
+
+.status-error {
+  background: #ff6b6b;
+  color: var(--white);
+}
+
+/* Pagination */
+.logs-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.page-info {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* ── Dashboard Responsive ── */
+@media (max-width: 900px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .logs-filters {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .neo-select {
+    width: 100%;
   }
 }

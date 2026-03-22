@@ -1,7 +1,8 @@
 // ──────────────────────────────────────────────
 //  Weather App — Full-Stack Upgrade
 //  Node.js + Express + EJS + OpenWeatherMap API
-//  Features: Geolocation, Predictor, Leaflet Map
+//  Features: Geolocation, Predictor, Leaflet Map,
+//            API Usage Dashboard
 // ──────────────────────────────────────────────
 
 // 1. Load environment variables
@@ -10,6 +11,7 @@ require("dotenv").config();
 // 2. Import packages
 const express = require("express");
 const axios = require("axios");
+const { logApiCall, getStats, getLogs, exportCSV } = require("./utils/logger");
 
 // 3. Create Express app
 const app = express();
@@ -64,11 +66,14 @@ app.get("/", (req, res) => {
  * Search-based view with autocomplete, filters, and Leaflet map
  */
 app.get("/predict", (req, res) => {
-  res.render("predict", {
-    activePage: "predict",
-    weather: null,
-    error: null,
-  });
+  res.render("predict", { activePage: "predict" });
+});
+
+/**
+ * GET /apiStats — API Usage Dashboard
+ */
+app.get("/apiStats", (req, res) => {
+  res.render("apiStats", { activePage: "apiStats" });
 });
 
 /**
@@ -93,6 +98,14 @@ app.get("/api/weather-current", async (req, res) => {
     const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`;
     const weatherResponse = await axios.get(weatherUrl);
     const data = weatherResponse.data;
+
+    // ✅ Log successful API call
+    logApiCall({
+      endpoint: "Current Weather",
+      city: data.name || `${lat},${lon}`,
+      status: "success",
+      statusCode: 200,
+    });
 
     res.json({
       city: data.name,
@@ -120,6 +133,14 @@ app.get("/api/weather-current", async (req, res) => {
     console.error("API Message:", apiMessage);
     console.error("Full Response:", JSON.stringify(apiRawError, null, 2));
     console.error("─────────────────────────────");
+
+    // ❌ Log failed API call
+    logApiCall({
+      endpoint: "Current Weather",
+      city: `${lat},${lon}`,
+      status: "error",
+      statusCode: err.response?.status || 500,
+    });
 
     // Build user-friendly UI error based on the API's message
     let uiError = "Service currently down. Please try again later.";
@@ -158,8 +179,36 @@ app.get("/api/suggestions", (req, res) => {
 });
 
 /**
- * POST /weather — Process city search for the Predictor View
+ * GET /api/stats — JSON endpoint for dashboard stats
+ * Returns aggregated usage statistics and recent logs
+ */
+app.get("/api/stats", (req, res) => {
+  const stats = getStats();
+  const { logs, total } = getLogs({
+    limit: parseInt(req.query.limit) || 50,
+    offset: parseInt(req.query.offset) || 0,
+    endpoint: req.query.endpoint || null,
+    status: req.query.status || null,
+    date: req.query.date || null,
+  });
+
+  res.json({ stats, logs, total });
+});
+
+/**
+ * GET /api/logs/download — Download all logs as CSV
+ */
+app.get("/api/logs/download", (req, res) => {
+  const csv = exportCSV();
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", "attachment; filename=api_logs.csv");
+  res.send(csv);
+});
+
+/**
+ * POST /weather — Process city search for the Predictor View (JSON API)
  * Uses Geocoding API → FREE 5-Day Forecast API 2.5 → tomorrow's forecast
+ * Returns JSON so the frontend can update without a full page reload.
  */
 app.post("/weather", async (req, res) => {
   const city = req.body.city;
@@ -167,65 +216,75 @@ app.post("/weather", async (req, res) => {
 
   // Validate input
   if (!city || city.trim() === "") {
-    return res.render("predict", {
-      activePage: "predict",
-      weather: null,
-      error: "Please enter a city name.",
-    });
+    return res.status(400).json({ error: "Please enter a city name." });
   }
 
   if (!API_KEY) {
-    return res.render("predict", {
-      activePage: "predict",
-      weather: null,
-      error: "API key is missing. Please add it to your .env file.",
-    });
+    return res.status(500).json({ error: "API key is missing. Please add it to your .env file." });
   }
 
   try {
+    console.log("-> Starting /weather request for:", city);
     // Step 1: Geocoding — city name → lat/lon
     const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(
       city.trim()
     )}&limit=1&appid=${API_KEY}`;
 
     const geoResponse = await axios.get(geoUrl);
+    console.log("-> Geocoding success");
+
+    // ✅ Log geocoding call
+    logApiCall({
+      endpoint: "Geocoding",
+      city: city.trim(),
+      status: "success",
+      statusCode: 200,
+    });
+    console.log("-> Logged geocoding");
 
     if (!geoResponse.data || geoResponse.data.length === 0) {
-      return res.render("predict", {
-        activePage: "predict",
-        weather: null,
+      return res.status(404).json({
         error: `City "${city}" not found. Check the spelling and try again.`,
       });
     }
 
     const { lat, lon, name, state, country } = geoResponse.data[0];
+    console.log("-> Found coords:", lat, lon);
 
     // Step 2: FREE 5-Day/3-Hour Forecast API → filter tomorrow's entries
     const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`;
     const forecastResponse = await axios.get(forecastUrl);
     const forecastList = forecastResponse.data.list;
+    console.log("-> Forecast success, items:", forecastList?.length);
+
+    // ✅ Log forecast call
+    logApiCall({
+      endpoint: "5-Day Forecast",
+      city: name,
+      status: "success",
+      statusCode: 200,
+    });
+    console.log("-> Logged forecast");
 
     // Filter entries for tomorrow's date
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowDateStr = tomorrow.toISOString().split("T")[0]; // "YYYY-MM-DD"
+    console.log("-> Looking for tomorrow's date:", tomorrowDateStr);
 
     const tomorrowEntries = forecastList.filter((entry) =>
       entry.dt_txt.startsWith(tomorrowDateStr)
     );
+    console.log("-> Tomorrow entries count:", tomorrowEntries.length);
 
     if (tomorrowEntries.length === 0) {
-      return res.render("predict", {
-        activePage: "predict",
-        weather: null,
+      return res.status(404).json({
         error: "Could not get tomorrow's forecast data. Please try again.",
       });
     }
 
     // Step 3: Aggregate tomorrow's data from 3-hour intervals
-    //   - Use the midday entry (12:00) as the representative condition
-    //   - Calculate min/max from all entries
     const middayEntry = tomorrowEntries.find((e) => e.dt_txt.includes("12:00")) || tomorrowEntries[0];
 
     const temps = tomorrowEntries.map((e) => e.main.temp);
@@ -240,6 +299,7 @@ app.post("/weather", async (req, res) => {
     });
 
     const condition = middayEntry.weather[0];
+    console.log("-> Aggregated data successfully");
 
     // Step 4: Build result
     const weatherData = {
@@ -267,14 +327,12 @@ app.post("/weather", async (req, res) => {
       }),
     };
 
+    console.log("-> About to call addRecentSearch");
     // Save to recent searches
     addRecentSearch(name);
 
-    res.render("predict", {
-      activePage: "predict",
-      weather: weatherData,
-      error: null,
-    });
+    console.log("-> About to send JSON");
+    res.json({ weather: weatherData });
   } catch (err) {
     // Log the raw API failure message to the console
     const apiRawError = err.response?.data || null;
@@ -284,6 +342,14 @@ app.post("/weather", async (req, res) => {
     console.error("API Message:", apiMessage);
     console.error("Full Response:", JSON.stringify(apiRawError, null, 2));
     console.error("─────────────────────────────");
+
+    // ❌ Log failed API call (could be geocoding or forecast)
+    logApiCall({
+      endpoint: "5-Day Forecast",
+      city: city.trim(),
+      status: "error",
+      statusCode: err.response?.status || 500,
+    });
 
     // Build user-friendly UI error based on the API's message
     let uiError = "Service currently down. Please try again later.";
@@ -297,11 +363,7 @@ app.post("/weather", async (req, res) => {
       uiError = `API Error: ${apiMessage}`;
     }
 
-    res.render("predict", {
-      activePage: "predict",
-      weather: null,
-      error: uiError,
-    });
+    res.status(err.response?.status || 500).json({ error: uiError });
   }
 });
 
