@@ -62,6 +62,9 @@ function updateSummaryCards(stats) {
   document.getElementById("remaining-count").textContent = stats.remaining;
   document.getElementById("most-used").textContent = stats.mostUsed;
   document.getElementById("error-count").textContent = stats.todayErrors;
+  if(document.getElementById("cache-count")) {
+    document.getElementById("cache-count").textContent = stats.todayCacheHits || 0;
+  }
 
   // Color the remaining count
   const remainEl = document.getElementById("remaining-count");
@@ -276,15 +279,34 @@ function updateLogsTable(logs, total) {
           minute: "2-digit",
           second: "2-digit",
         });
-        const statusClass = log.status === "success" ? "status-success" : "status-error";
-        const statusLabel = log.status === "success" ? "OK" : "ERR";
+        
+        let statusClass = "status-success";
+        let statusLabel = "OK";
+        if (log.status === "success (backup)") {
+          statusClass = "status-backup";
+          statusLabel = "BACKUP";
+        } else if (log.status === "cache_hit") {
+          statusClass = "status-cache";
+          statusLabel = "CACHE";
+        } else if (log.status === "stale_cache") {
+          statusClass = "status-stale";
+          statusLabel = "STALE CACHE";
+        } else if (log.status === "error") {
+          statusClass = "status-error";
+          statusLabel = "ERR";
+        }
+
+        const codeHtml = log.errorMsg 
+          ? `<div>${log.statusCode}</div><div class="log-error-msg">${log.errorMsg}</div>` 
+          : log.statusCode;
+
         return `
           <tr class="log-row">
             <td class="log-time">${time}</td>
             <td><span class="endpoint-tag">${log.endpoint}</span></td>
             <td class="log-city">${log.city}</td>
             <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
-            <td class="log-code">${log.statusCode}</td>
+            <td class="log-code">${codeHtml}</td>
           </tr>
         `;
       })

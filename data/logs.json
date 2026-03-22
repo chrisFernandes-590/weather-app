@@ -206,5 +206,339 @@
     "city": "Virār",
     "status": "success",
     "statusCode": 200
+  },
+  {
+    "id": "1774197678522-epgf05",
+    "timestamp": "2026-03-22T16:41:18.522Z",
+    "endpoint": "Geocoding",
+    "city": "vkd",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774198148379-fiujas",
+    "timestamp": "2026-03-22T16:49:08.379Z",
+    "endpoint": "Current Weather",
+    "city": "19.40649651952295,72.83880163116365",
+    "status": "success (backup)",
+    "statusCode": 200
+  },
+  {
+    "id": "1774198178181-i74b2r",
+    "timestamp": "2026-03-22T16:49:38.181Z",
+    "endpoint": "Geocoding",
+    "city": "London",
+    "status": "success (backup)",
+    "statusCode": 200
+  },
+  {
+    "id": "1774198178658-cooea3",
+    "timestamp": "2026-03-22T16:49:38.658Z",
+    "endpoint": "5-Day Forecast",
+    "city": "London",
+    "status": "success (backup)",
+    "statusCode": 200
+  },
+  {
+    "id": "1774198365889-yfabqk",
+    "timestamp": "2026-03-22T16:52:45.889Z",
+    "endpoint": "Current Weather",
+    "city": "19.4065778441944,72.83870042653544",
+    "status": "success (backup)",
+    "statusCode": 200
+  },
+  {
+    "id": "1774198380881-3qye0b",
+    "timestamp": "2026-03-22T16:53:00.881Z",
+    "endpoint": "Geocoding",
+    "city": "Vasai",
+    "status": "success (backup)",
+    "statusCode": 200
+  },
+  {
+    "id": "1774198381168-fibr0s",
+    "timestamp": "2026-03-22T16:53:01.168Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Vasai",
+    "status": "success (backup)",
+    "statusCode": 200
+  },
+  {
+    "id": "1774198386783-buqiec",
+    "timestamp": "2026-03-22T16:53:06.783Z",
+    "endpoint": "Geocoding",
+    "city": "mumbai",
+    "status": "success (backup)",
+    "statusCode": 200
+  },
+  {
+    "id": "1774198386969-p50ut0",
+    "timestamp": "2026-03-22T16:53:06.969Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Mumbai",
+    "status": "success (backup)",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199006847-3mew4y",
+    "timestamp": "2026-03-22T17:03:26.847Z",
+    "endpoint": "Geocoding",
+    "city": "Rome",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199007060-ac9e18",
+    "timestamp": "2026-03-22T17:03:27.060Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Rome",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199023584-uiszgm",
+    "timestamp": "2026-03-22T17:03:43.584Z",
+    "endpoint": "Geocoding",
+    "city": "Rome",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199023587-jte5lx",
+    "timestamp": "2026-03-22T17:03:43.587Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Rome",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199149797-ls02rd",
+    "timestamp": "2026-03-22T17:05:49.797Z",
+    "endpoint": "Geocoding",
+    "city": "Rome",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199149928-plmh38",
+    "timestamp": "2026-03-22T17:05:49.928Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Rome",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199163093-ejf5yi",
+    "timestamp": "2026-03-22T17:06:03.093Z",
+    "endpoint": "Geocoding",
+    "city": "TokyoRome",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199176484-uyqqv0",
+    "timestamp": "2026-03-22T17:06:16.484Z",
+    "endpoint": "Geocoding",
+    "city": "TokyoTokyoRome",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199191778-v7jv09",
+    "timestamp": "2026-03-22T17:06:31.778Z",
+    "endpoint": "Geocoding",
+    "city": "Tokyo",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199191908-z9gkeh",
+    "timestamp": "2026-03-22T17:06:31.908Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Tokyo",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199274877-ul404h",
+    "timestamp": "2026-03-22T17:07:54.877Z",
+    "endpoint": "Geocoding",
+    "city": "Tokyo",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199274880-19idra",
+    "timestamp": "2026-03-22T17:07:54.880Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Tokyo",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199370167-gg2t53",
+    "timestamp": "2026-03-22T17:09:30.167Z",
+    "endpoint": "Geocoding",
+    "city": "Rome",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199370170-wldshn",
+    "timestamp": "2026-03-22T17:09:30.170Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Rome",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199391418-hz0ryd",
+    "timestamp": "2026-03-22T17:09:51.418Z",
+    "endpoint": "Geocoding",
+    "city": "RomeTokyo",
+    "status": "error",
+    "statusCode": 401,
+    "errorMsg": "Request failed with status code 401"
+  },
+  {
+    "id": "1774199405619-xwekzd",
+    "timestamp": "2026-03-22T17:10:05.619Z",
+    "endpoint": "Geocoding",
+    "city": "TokyoRomeTokyo",
+    "status": "error",
+    "statusCode": 401,
+    "errorMsg": "Request failed with status code 401"
+  },
+  {
+    "id": "1774199422960-dg6rpq",
+    "timestamp": "2026-03-22T17:10:22.960Z",
+    "endpoint": "Geocoding",
+    "city": "Tokyo",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199422962-2ki0ra",
+    "timestamp": "2026-03-22T17:10:22.962Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Tokyo",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199441353-43g9sq",
+    "timestamp": "2026-03-22T17:10:41.353Z",
+    "endpoint": "Geocoding",
+    "city": "Berlin",
+    "status": "error",
+    "statusCode": 401,
+    "errorMsg": "Request failed with status code 401"
+  },
+  {
+    "id": "1774199522679-20y210",
+    "timestamp": "2026-03-22T17:12:02.679Z",
+    "endpoint": "Geocoding",
+    "city": "Rome",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199522682-t8h407",
+    "timestamp": "2026-03-22T17:12:02.682Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Rome",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199645990-q3k19q",
+    "timestamp": "2026-03-22T17:14:05.990Z",
+    "endpoint": "Geocoding",
+    "city": "rome",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199645993-gbizlv",
+    "timestamp": "2026-03-22T17:14:05.993Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Rome",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774199734687-0m90oj",
+    "timestamp": "2026-03-22T17:15:34.687Z",
+    "endpoint": "Geocoding",
+    "city": "Delhi",
+    "status": "error",
+    "statusCode": 401,
+    "errorMsg": "Request failed with status code 401"
+  },
+  {
+    "id": "1774200568001-qfwkzi",
+    "timestamp": "2026-03-22T17:29:28.001Z",
+    "endpoint": "Geocoding",
+    "city": "goa",
+    "status": "error",
+    "statusCode": 401,
+    "errorMsg": "Request failed with status code 401"
+  },
+  {
+    "id": "1774200589589-mzywvz",
+    "timestamp": "2026-03-22T17:29:49.589Z",
+    "endpoint": "Geocoding",
+    "city": "goa",
+    "status": "error",
+    "statusCode": 401,
+    "errorMsg": "Request failed with status code 401"
+  },
+  {
+    "id": "1774200700728-sahomk",
+    "timestamp": "2026-03-22T17:31:40.728Z",
+    "endpoint": "Geocoding",
+    "city": "goa",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774200701479-0pbc3i",
+    "timestamp": "2026-03-22T17:31:41.479Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Goa",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774200718372-f41ze3",
+    "timestamp": "2026-03-22T17:31:58.372Z",
+    "endpoint": "Geocoding",
+    "city": "goa",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774200718377-ywgb3z",
+    "timestamp": "2026-03-22T17:31:58.377Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Goa",
+    "status": "cache_hit",
+    "statusCode": 200
+  },
+  {
+    "id": "1774200725174-tffi1u",
+    "timestamp": "2026-03-22T17:32:05.174Z",
+    "endpoint": "Geocoding",
+    "city": "antartica",
+    "status": "success",
+    "statusCode": 200
+  },
+  {
+    "id": "1774200725321-zphqen",
+    "timestamp": "2026-03-22T17:32:05.321Z",
+    "endpoint": "5-Day Forecast",
+    "city": "Antártica",
+    "status": "success",
+    "statusCode": 200
   }
 ]

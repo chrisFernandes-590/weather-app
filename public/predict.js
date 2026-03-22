@@ -194,6 +194,20 @@ function displayResult(data) {
   resultCity.textContent = cityText;
   resultDate.textContent = data.date;
 
+  // Cache Indicator
+  const cacheIndicator = document.getElementById("cache-indicator-predict");
+  if (cacheIndicator) {
+    if (data.isCached) {
+      cacheIndicator.style.display = "inline-block";
+      cacheIndicator.textContent = "Cached 3h";
+      cacheIndicator.style.backgroundColor = "var(--brutal-yellow)";
+    } else {
+      cacheIndicator.style.display = "inline-block";
+      cacheIndicator.textContent = "Live Source";
+      cacheIndicator.style.backgroundColor = "var(--brutal-green)";
+    }
+  }
+
   // Icon + description
   resultIcon.src = `https://openweathermap.org/img/wn/${data.icon}@4x.png`;
   resultIcon.alt = data.description;

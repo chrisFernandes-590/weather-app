@@ -1288,7 +1288,7 @@ body {
 /* ── Summary Cards Grid ── */
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
 }
@@ -1581,6 +1581,30 @@ body {
   color: var(--white);
 }
 
+.status-backup {
+  background: #00cec9;
+  color: var(--black);
+}
+
+.status-cache {
+  background: #ffeaa7;
+  color: var(--black);
+}
+
+.status-stale {
+  background: #fdcb6e;
+  color: var(--black);
+}
+
+.log-error-msg {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #ff6b6b;
+  font-weight: 700;
+  margin-top: 0.2rem;
+  line-height: 1.2;
+}
+
 /* Pagination */
 .logs-pagination {
   display: flex;
@@ -1624,4 +1648,19 @@ body {
   .neo-select {
     width: 100%;
   }
+}
+
+/* ── Cache Badges ── */
+.hero-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.cache-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  box-shadow: 1px 1px 0 var(--shadow-dark);
 }

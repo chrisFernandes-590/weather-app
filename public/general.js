@@ -137,6 +137,20 @@ function updateUI(data) {
   windValue.textContent = `${data.windSpeed} km/h`;
   feelsLikeValue.textContent = `${data.feelsLike}°C`;
 
+  // Display cache status badge
+  const cacheIndicator = document.getElementById("cache-indicator");
+  if (cacheIndicator) {
+    if (data.isCached) {
+      cacheIndicator.style.display = "inline-block";
+      cacheIndicator.textContent = "Cached 3h";
+      cacheIndicator.style.backgroundColor = "var(--brutal-yellow)";
+    } else {
+      cacheIndicator.style.display = "inline-block";
+      cacheIndicator.textContent = "Live Source";
+      cacheIndicator.style.backgroundColor = "var(--brutal-green)";
+    }
+  }
+
   // Apply dynamic background + theme blending
   applyDynamicBackground(data);
 }

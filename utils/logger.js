@@ -43,7 +43,7 @@ function writeLogs(logs) {
 // city: city name or "lat,lon" for coordinate-based calls
 // status: "success" | "error"
 // statusCode: HTTP status code (200, 401, 500, etc.)
-function logApiCall({ endpoint, city, status, statusCode }) {
+function logApiCall({ endpoint, city, status, statusCode, errorMsg }) {
   const logs = readLogs();
 
   const entry = {
@@ -54,6 +54,10 @@ function logApiCall({ endpoint, city, status, statusCode }) {
     status: status || "success",
     statusCode: statusCode || 200,
   };
+  
+  if (errorMsg) {
+    entry.errorMsg = errorMsg;
+  }
 
   logs.push(entry);
 
@@ -78,15 +82,21 @@ function getStats() {
 
   // Today's logs
   const todayLogs = logs.filter((l) => l.timestamp.startsWith(today));
-  const todayCount = todayLogs.length;
+  
+  // Separate actual API calls from cache hits
+  const apiCallsToday = todayLogs.filter((l) => !l.status.includes("cache"));
+  const todayCount = apiCallsToday.length;
   const remaining = Math.max(0, DAILY_LIMIT - todayCount);
 
-  // Error count today
+  // Error count today (strict matching to exclude "success (backup)")
   const todayErrors = todayLogs.filter((l) => l.status === "error").length;
 
-  // Per-endpoint breakdown (today)
+  // Cache hits today
+  const todayCacheHits = todayLogs.filter((l) => l.status.includes("cache")).length;
+
+  // Per-endpoint breakdown (today) 
   const endpointCounts = {};
-  todayLogs.forEach((l) => {
+  apiCallsToday.forEach((l) => {
     endpointCounts[l.endpoint] = (endpointCounts[l.endpoint] || 0) + 1;
   });
 
@@ -108,7 +118,7 @@ function getStats() {
     const key = d.toISOString().split("T")[0];
     dailyCounts[key] = 0;
   }
-  logs.forEach((l) => {
+  logs.filter((l) => !l.status.includes("cache")).forEach((l) => {
     const day = l.timestamp.split("T")[0];
     if (dailyCounts.hasOwnProperty(day)) {
       dailyCounts[day]++;
@@ -121,7 +131,7 @@ function getStats() {
     const label = `${String(h).padStart(2, "0")}:00`;
     hourlyCounts[label] = 0;
   }
-  todayLogs.forEach((l) => {
+  apiCallsToday.forEach((l) => {
     const hour = new Date(l.timestamp).getHours();
     const label = `${String(hour).padStart(2, "0")}:00`;
     hourlyCounts[label]++;
@@ -129,7 +139,7 @@ function getStats() {
 
   // All-time endpoint breakdown (for pie chart)
   const allEndpointCounts = {};
-  logs.forEach((l) => {
+  logs.filter((l) => !l.status.includes("cache")).forEach((l) => {
     allEndpointCounts[l.endpoint] = (allEndpointCounts[l.endpoint] || 0) + 1;
   });
 
@@ -138,6 +148,7 @@ function getStats() {
     todayCount,
     remaining,
     todayErrors,
+    todayCacheHits,
     mostUsed,
     mostUsedCount,
     endpointCounts,

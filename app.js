@@ -12,6 +12,7 @@ require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 const { logApiCall, getStats, getLogs, exportCSV } = require("./utils/logger");
+const { makeWeatherRequest } = require("./utils/apiHelper");
 
 // 3. Create Express app
 const app = express();
@@ -83,29 +84,18 @@ app.get("/apiStats", (req, res) => {
  */
 app.get("/api/weather-current", async (req, res) => {
   const { lat, lon } = req.query;
-  const API_KEY = process.env.API_KEY;
 
   if (!lat || !lon) {
     return res.status(400).json({ error: "Latitude and longitude are required." });
   }
 
-  if (!API_KEY) {
-    return res.status(500).json({ error: "API key is missing on the server." });
-  }
-
   try {
-    // Current weather using FREE Current Weather API 2.5
-    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`;
-    const weatherResponse = await axios.get(weatherUrl);
-    const data = weatherResponse.data;
+    const urlTemplate = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=__API_KEY__`;
+    const cacheKey = `current_${lat}_${lon}`;
+    const endpointName = "Current Weather";
+    const locName = `${lat},${lon}`;
 
-    // ✅ Log successful API call
-    logApiCall({
-      endpoint: "Current Weather",
-      city: data.name || `${lat},${lon}`,
-      status: "success",
-      statusCode: 200,
-    });
+    const { isCached, data } = await makeWeatherRequest(urlTemplate, cacheKey, endpointName, locName);
 
     res.json({
       city: data.name,
@@ -123,40 +113,22 @@ app.get("/api/weather-current", async (req, res) => {
       sunrise: data.sys.sunrise,
       sunset: data.sys.sunset,
       timezone_offset: data.timezone,
+      isCached, // Flag for UI
     });
   } catch (err) {
-    // Log the raw API failure message to the console
-    const apiRawError = err.response?.data || null;
-    const apiMessage = apiRawError?.message || err.message || null;
-    console.error("──── API Error (current) ────");
-    console.error("Status:", err.response?.status || "No response");
-    console.error("API Message:", apiMessage);
-    console.error("Full Response:", JSON.stringify(apiRawError, null, 2));
-    console.error("─────────────────────────────");
-
-    // ❌ Log failed API call
-    logApiCall({
-      endpoint: "Current Weather",
-      city: `${lat},${lon}`,
-      status: "error",
-      statusCode: err.response?.status || 500,
-    });
-
-    // Build user-friendly UI error based on the API's message
+    // Determine user error message
     let uiError = "Service currently down. Please try again later.";
     if (err.response?.status === 401) {
-      uiError = "Invalid API key. Please check your .env file.";
+      uiError = "Invalid API keys. Please check your .env file.";
     } else if (err.response?.status === 429) {
       uiError = "Too many requests. Please wait and try again.";
     } else if (err.response?.status === 404) {
       uiError = "Weather data not found for this location.";
-    } else if (apiMessage) {
-      uiError = `API Error: ${apiMessage}`;
     }
 
     res.status(err.response?.status || 500).json({
       error: uiError,
-      apiMessage: apiMessage || "No error message provided by the API.",
+      apiMessage: err.message || "No error message provided.",
     });
   }
 });
@@ -212,59 +184,48 @@ app.get("/api/logs/download", (req, res) => {
  */
 app.post("/weather", async (req, res) => {
   const city = req.body.city;
-  const API_KEY = process.env.API_KEY;
 
   // Validate input
   if (!city || city.trim() === "") {
     return res.status(400).json({ error: "Please enter a city name." });
   }
 
-  if (!API_KEY) {
-    return res.status(500).json({ error: "API key is missing. Please add it to your .env file." });
-  }
-
   try {
     console.log("-> Starting /weather request for:", city);
+    
     // Step 1: Geocoding — city name → lat/lon
-    const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(
+    const geoUrlTemplate = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(
       city.trim()
-    )}&limit=1&appid=${API_KEY}`;
+    )}&limit=1&appid=__API_KEY__`;
+    
+    const { isCached: geoCached, data: geoData } = await makeWeatherRequest(
+      geoUrlTemplate, 
+      `geo_${city.toLowerCase().trim()}`, 
+      "Geocoding", 
+      city.trim()
+    );
 
-    const geoResponse = await axios.get(geoUrl);
-    console.log("-> Geocoding success");
-
-    // ✅ Log geocoding call
-    logApiCall({
-      endpoint: "Geocoding",
-      city: city.trim(),
-      status: "success",
-      statusCode: 200,
-    });
-    console.log("-> Logged geocoding");
-
-    if (!geoResponse.data || geoResponse.data.length === 0) {
+    if (!geoData || geoData.length === 0) {
       return res.status(404).json({
         error: `City "${city}" not found. Check the spelling and try again.`,
       });
     }
 
-    const { lat, lon, name, state, country } = geoResponse.data[0];
+    const { lat, lon, name, state, country } = geoData[0];
     console.log("-> Found coords:", lat, lon);
 
     // Step 2: FREE 5-Day/3-Hour Forecast API → filter tomorrow's entries
-    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`;
-    const forecastResponse = await axios.get(forecastUrl);
-    const forecastList = forecastResponse.data.list;
-    console.log("-> Forecast success, items:", forecastList?.length);
+    const forecastUrlTemplate = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=__API_KEY__`;
+    
+    const { isCached: forecastCached, data: forecastData } = await makeWeatherRequest(
+      forecastUrlTemplate, 
+      `forecast_${lat}_${lon}`, 
+      "5-Day Forecast", 
+      name
+    );
 
-    // ✅ Log forecast call
-    logApiCall({
-      endpoint: "5-Day Forecast",
-      city: name,
-      status: "success",
-      statusCode: 200,
-    });
-    console.log("-> Logged forecast");
+    const forecastList = forecastData.list;
+    console.log("-> Forecast success, items:", forecastList?.length);
 
     // Filter entries for tomorrow's date
     const now = new Date();
@@ -299,7 +260,6 @@ app.post("/weather", async (req, res) => {
     });
 
     const condition = middayEntry.weather[0];
-    console.log("-> Aggregated data successfully");
 
     // Step 4: Build result
     const weatherData = {
@@ -325,36 +285,22 @@ app.post("/weather", async (req, res) => {
         month: "long",
         day: "numeric",
       }),
+      isCached: geoCached || forecastCached // Flag if either was loaded from cache
     };
 
-    console.log("-> About to call addRecentSearch");
     // Save to recent searches
     addRecentSearch(name);
 
-    console.log("-> About to send JSON");
     res.json({ weather: weatherData });
   } catch (err) {
-    // Log the raw API failure message to the console
+    // Note: makeWeatherRequest already logs the definitive failure.
+    // We just need to parse the message correctly for the UI.
     const apiRawError = err.response?.data || null;
     const apiMessage = apiRawError?.message || err.message || null;
-    console.error("──── API Error (predict) ────");
-    console.error("Status:", err.response?.status || "No response");
-    console.error("API Message:", apiMessage);
-    console.error("Full Response:", JSON.stringify(apiRawError, null, 2));
-    console.error("─────────────────────────────");
 
-    // ❌ Log failed API call (could be geocoding or forecast)
-    logApiCall({
-      endpoint: "5-Day Forecast",
-      city: city.trim(),
-      status: "error",
-      statusCode: err.response?.status || 500,
-    });
-
-    // Build user-friendly UI error based on the API's message
     let uiError = "Service currently down. Please try again later.";
     if (err.response?.status === 401) {
-      uiError = "Invalid API key. Please check your .env file.";
+      uiError = "Invalid API keys. Please check your .env file.";
     } else if (err.response?.status === 429) {
       uiError = "Too many requests. Please wait and try again.";
     } else if (err.response?.status === 404) {
