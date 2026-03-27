@@ -8,7 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 
-const isServerless = process.env.VERCEL || process.env.NODE_ENV === "production";
+const isServerless = !!process.env.VERCEL || process.env.NODE_ENV === "production" || __dirname.includes("/var/task");
 const LOG_FILE = isServerless 
   ? path.join(os.tmpdir(), "weather_logs.json") 
   : path.join(__dirname, "..", "data", "logs.json");

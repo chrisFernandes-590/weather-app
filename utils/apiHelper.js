@@ -4,7 +4,7 @@ const os = require("os");
 const axios = require("axios");
 const { logApiCall } = require("./logger");
 
-const isServerless = process.env.VERCEL || process.env.NODE_ENV === "production";
+const isServerless = !!process.env.VERCEL || process.env.NODE_ENV === "production" || __dirname.includes("/var/task");
 const CACHE_FILE = isServerless 
   ? path.join(os.tmpdir(), "weather_cache.json") 
   : path.join(__dirname, "..", "data", "cache.json");
