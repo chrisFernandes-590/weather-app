@@ -1,9 +1,13 @@
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 const axios = require("axios");
 const { logApiCall } = require("./logger");
 
-const CACHE_FILE = path.join(__dirname, "..", "data", "cache.json");
+const isServerless = process.env.VERCEL || process.env.NODE_ENV === "production";
+const CACHE_FILE = isServerless 
+  ? path.join(os.tmpdir(), "weather_cache.json") 
+  : path.join(__dirname, "..", "data", "cache.json");
 const CACHE_DURATION_MS = 3 * 60 * 60 * 1000; // 3 hours
 
 /**

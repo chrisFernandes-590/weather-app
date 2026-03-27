@@ -316,6 +316,10 @@ app.post("/weather", async (req, res) => {
 // ──────────────────────────────────────────────
 //  START SERVER
 // ──────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`🌤️  Weather app running at http://localhost:${PORT}`);
-});
+module.exports = app;
+
+if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🌤️  Weather app running at http://localhost:${PORT}`);
+  });
+}

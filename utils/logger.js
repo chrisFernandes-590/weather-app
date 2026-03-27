@@ -6,8 +6,12 @@
 
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 
-const LOG_FILE = path.join(__dirname, "..", "data", "logs.json");
+const isServerless = process.env.VERCEL || process.env.NODE_ENV === "production";
+const LOG_FILE = isServerless 
+  ? path.join(os.tmpdir(), "weather_logs.json") 
+  : path.join(__dirname, "..", "data", "logs.json");
 const DAILY_LIMIT = 1000; // OpenWeatherMap free tier
 
 // ── Ensure data directory & file exist ──
